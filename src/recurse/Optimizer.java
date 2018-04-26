@@ -8,21 +8,20 @@ import java.util.function.Function;
 import java.util.function.UnaryOperator;
 
 public class Optimizer<T, R> implements Function<T, R> {
+	private static final StackInterrupter interrupter = new StackInterrupter();
 
-	private Deque<T> inputStack = new ArrayDeque<>();
-	private Map<T, R> results = new HashMap<>();
-	private Catcher<T, R> catcher = new Catcher<>(inputStack, results);
-	private Function<T, R> function;
-	
+	private final Deque<T> inputStack = new ArrayDeque<>();
+	private final Map<T, R> results = new HashMap<>();
+	private final Function<T, R> function;
+
 	public Optimizer(UnaryOperator<Function<T, R>> rawFunction) {
-		function = rawFunction.apply(catcher);
+		function = rawFunction.apply(new Catcher());
 	}
 
 	@Override
 	public R apply(T t) {
 		inputStack.push(t);
 		R result = null;
-		
 		while (!inputStack.isEmpty()) {
 			try {
 				result = function.apply(inputStack.peek());
@@ -31,8 +30,18 @@ public class Optimizer<T, R> implements Function<T, R> {
 				continue;
 			}
 		}
-		
 		return result;
 	}
 
+	private class Catcher implements Function<T, R> {
+		@Override
+		public R apply(T t) {
+			if (results.containsKey(t)) {
+				return results.get(t);
+			} else {
+				inputStack.push(t);
+				throw interrupter;
+			}
+		}
+	}
 }

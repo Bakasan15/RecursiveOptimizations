@@ -3,6 +3,7 @@ package test;
 import java.math.BigInteger;
 import java.util.Arrays;
 import java.util.List;
+import java.util.function.Function;
 
 import recurse.Optimizer;
 
@@ -14,11 +15,11 @@ public class Tester {
 	public static final BigInteger THREE = BigInteger.valueOf(3);
 
 	public static void main(String[] args) {
-		Optimizer<Integer, Integer> fib = new Optimizer<>(f -> n -> (n <= 2) ? 1 : (f.apply(n - 1) + f.apply(n - 2)));
+		Function<Integer, Integer> fib = new Optimizer<>(f -> n -> (n <= 2) ? 1 : (f.apply(n - 1) + f.apply(n - 2)));
 
-		Optimizer<Integer, Integer> fac = new Optimizer<>(f -> n -> (n <= 1) ? 1 : (n * f.apply(n - 1)));
+		Function<Integer, Integer> fac = new Optimizer<>(f -> n -> (n <= 1) ? 1 : (n * f.apply(n - 1)));
 
-		Optimizer<List<BigInteger>, BigInteger> ack = new Optimizer<>(f -> i -> {
+		Function<List<BigInteger>, BigInteger> ack = new Optimizer<>(f -> i -> {
 			BigInteger m = i.get(0);
 			BigInteger n = i.get(1);
 			switch (m.intValue()) {
@@ -38,5 +39,4 @@ public class Tester {
 		System.out.println(fac.apply(10));
 		System.out.println(ack.apply(Arrays.asList(BigInteger.valueOf(4), BigInteger.valueOf(2))));
 	}
-
 }
