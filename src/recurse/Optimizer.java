@@ -1,3 +1,6 @@
+package recurse;
+
+
 
 import java.util.ArrayDeque;
 import java.util.Deque;
@@ -16,16 +19,30 @@ public class Optimizer<T, R> implements Function<T, R> {
 	Function<T, R> function;
 	Deque<T> inputStack = new ArrayDeque<>();
 	Map<T, R> results = new HashMap<>();
+	int count;
 
-	public Optimizer(UnaryOperator<Function<T, R>> rawFunction) {
+	public Optimizer(UnaryOperator<Function<T, R>> rawFunction, int depth, boolean dynamic) {
+		count = depth;
 		function = rawFunction.apply(t -> {
 			if (results.containsKey(t)) {
 				return results.get(t);
+			} else if (count > 0) {
+				count--;
+				R result = function.apply(t);
+				if (dynamic) {
+					results.put(t, result);
+				}
+				return result;
 			} else {
+				count = depth;
 				inputStack.push(t);
 				throw interrupter;
 			}
 		});
+	}
+	
+	public Optimizer(UnaryOperator<Function<T, R>> rawFunction) { 
+		this(rawFunction, 1000, true);
 	}
 
 	@Override
